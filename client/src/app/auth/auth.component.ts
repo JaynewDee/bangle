@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { HttpAuthService } from '../http/http.service';
 
 @Component({
@@ -8,6 +8,7 @@ import { HttpAuthService } from '../http/http.service';
 })
 export class AuthComponent implements OnInit {
   btnText = 'BLEEP BLOOP!';
+  @Input()
   users: any;
   constructor(private authService: HttpAuthService) {}
   logBtnText() {
@@ -16,14 +17,14 @@ export class AuthComponent implements OnInit {
 
   async downloadUsers() {
     await this.authService.getAllUsers();
-    this.users = this.authService.getUserStore();
+    await this.authService.setUserStore();
   }
 
-  async logLocal() {
-    console.log(this.users);
+  async populateUsers() {
+    this.users = await this.authService.getUserStore();
   }
 
-  ngOnInit(): void {}
-
-  ngOnChanges(): void {}
+  ngOnInit(): void {
+    this.populateUsers();
+  }
 }

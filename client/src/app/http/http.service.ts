@@ -3,7 +3,7 @@ import {
   HttpErrorResponse,
   HttpResponse,
 } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, Input } from '@angular/core';
 import { server } from 'src/utils/urls';
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
@@ -22,7 +22,9 @@ export interface User {
 })
 export class HttpAuthService {
   baseURL: string = server.baseURL;
+  @Input()
   users: User[] | undefined;
+
   constructor(private http: HttpClient) {}
 
   private handleError(error: HttpErrorResponse) {
@@ -46,13 +48,23 @@ export class HttpAuthService {
   async getAllUsers() {
     const req = this.http
       .get<User[]>(this.baseURL + 'user/all', {
-        observe: 'response',
+        observe: 'body',
       })
       .pipe(retry(3), catchError(this.handleError));
-    req.subscribe((res) => (this.users = [...res.body!]));
+    req.subscribe((res) => (this.users = [...res!]));
   }
 
-  getUserStore() {
-    return this.users;
+  async getUserStore() {
+    let users = localStorage.getItem('users');
+    if (users) {
+      let parsed = JSON.parse(users!);
+      return parsed;
+    } else {
+      return false;
+    }
+  }
+
+  async setUserStore() {
+    localStorage.setItem('users', JSON.stringify(this.users));
   }
 }
